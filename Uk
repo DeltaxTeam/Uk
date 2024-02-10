@@ -4,13 +4,13 @@ local otherPlayer = nil
 
 local part = Instance.new("Part")
 part.Size = Vector3.new(4, 3, 0.1)
-part.Position = Vector3.new(10, 10, 10) -- Adjust position as needed
+part.Position = Vector3.new(10, 10, 10)
 part.Anchored = true
 part.Transparency = 1
 part.Parent = game.Workspace
 
 local screenGui = Instance.new("SurfaceGui")
-screenGui.CanvasSize = Vector2.new(500, 300) -- Adjust size as needed
+screenGui.CanvasSize = Vector2.new(500, 300)
 screenGui.Parent = part
 
 local frame = Instance.new("Frame")
