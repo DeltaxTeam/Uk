@@ -1,90 +1,74 @@
-local player = game.Players.LocalPlayer
-local flyEnabled = false
-local otherPlayer = nil
+-- Creating the GUI elements
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
 
-local part = Instance.new("Part")
-part.Size = Vector3.new(4, 3, 0.1)
-part.Position = Vector3.new(10, 10, 10)
-part.Anchored = true
-part.Transparency = 1
-part.Parent = game.Workspace
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0.2, 0, 0.4, 0)
+Frame.Position = UDim2.new(0.8, 0, 0.2, 0)
+Frame.BackgroundColor3 = Color3.new(0, 0, 0)
+Frame.BorderSizePixel = 5
+Frame.Parent = ScreenGui
 
-local screenGui = Instance.new("SurfaceGui")
-screenGui.CanvasSize = Vector2.new(500, 300)
-screenGui.Parent = part
-
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(1, 0, 1, 0)
-frame.BackgroundColor3 = Color3.new(0, 0, 0)
-frame.BackgroundTransparency = 0.5
-frame.Parent = screenGui
-
-local flyButton = Instance.new("TextButton")
-local unflyButton = Instance.new("TextButton")
-local switchButton = Instance.new("TextButton")
-local backButton = Instance.new("TextButton")
-local textBox = Instance.new("TextBox")
-
-flyButton.Parent = frame
-unflyButton.Parent = frame
-switchButton.Parent = frame
-backButton.Parent = frame
-textBox.Parent = frame
-
-local function showError(message)
-    game.StarterGui:SetCore("SendNotification", {
-        Title = "Error",
-        Text = message,
-        Duration = 3
-    })
+local function createButton(name, text, func)
+    local button = Instance.new("TextButton")
+    button.Name = name
+    button.Size = UDim2.new(0.8, 0, 0.1, 0)
+    button.Position = UDim2.new(0.1, 0, 0.1 * #Frame:GetChildren(), 0)
+    button.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
+    button.Text = text
+    button.Parent = Frame
+    button.MouseButton1Click:Connect(func)
 end
 
-local function enableFly()
-    if flyEnabled then
-        return
-    else
-        player.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Flying, true)
-        flyEnabled = true
+createButton("FlyButton", "Fly", function()
+    if not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        return  -- Player is dead or not spawned
     end
-end
+    game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+end)
 
-local function disableFly()
-    if not flyEnabled then
-        showError("You have not activated 'Fly'.")
-    else
-        player.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Flying, false)
-        flyEnabled = false
-    end
-end
-
-local function switchToOtherPlayer()
-    local playerName = textBox.Text
-    
-    if playerName == "" then
-        showError("The textbox is empty.")
+createButton("UnflyButton", "Unfly", function()
+    if not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        print("You are not currently in fly mode.")
         return
     end
-    
-    otherPlayer = game.Players:FindFirstChild(playerName)
-    
-    if otherPlayer then
-        game.Workspace.CurrentCamera.CameraSubject = otherPlayer.Character.Humanoid
+    game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+end)
+
+createButton("ChangeSpeedButton", "Change Speed", function()
+    local speedInput = tonumber(Frame:FindFirstChild("SpeedInput").Text)
+    if speedInput then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speedInput
     else
-        showError("Player not found.")
+        print("Please enter a valid number for speed.")
     end
-end
+end)
 
-local function switchToOwnScreen()
-    if not otherPlayer then
-        showError("You are in your screen.")
-        return
+createButton("SeePlayerButton", "See Player", function()
+    local playerName = Frame:FindFirstChild("PlayerNameInput").Text
+    local player = game.Players:FindFirstChild(playerName)
+    if player then
+        -- Display the player on the screen
+    else
+        print("Player not found.")
     end
-    
-    game.Workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
-    otherPlayer = nil
-end
+end)
 
-flyButton.MouseButton1Click:Connect(enableFly)
-unflyButton.MouseButton1Click:Connect(disableFly)
-switchButton.MouseButton1Click:Connect(switchToOtherPlayer)
-backButton.MouseButton1Click:Connect(switchToOwnScreen)
+createButton("BackToScreenButton", "Back to My Screen", function()
+    -- Code to return to the player's own screen
+end)
+
+-- Adding input fields for speed and player name
+local speedInput = Instance.new("TextBox")
+speedInput.Name = "SpeedInput"
+speedInput.PlaceholderText = "Enter speed..."
+speedInput.Size = UDim2.new(0.8, 0, 0.05, 0)
+speedInput.Position = UDim2.new(0.1, 0, 0.05 * #Frame:GetChildren(), 0)
+speedInput.Parent = Frame
+
+local playerNameInput = Instance.new("TextBox")
+playerNameInput.Name = "PlayerNameInput"
+playerNameInput.PlaceholderText = "Enter player name..."
+playerNameInput.Size = UDim2.new(0.8, 0, 0.05, 0)
+playerNameInput.Position = UDim2.new(0.1, 0, 0.05 * #Frame:GetChildren(), 0)
+playerNameInput.Parent = Frame
