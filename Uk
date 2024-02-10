@@ -1,0 +1,90 @@
+local player = game.Players.LocalPlayer
+local flyEnabled = false
+local otherPlayer = nil
+
+local part = Instance.new("Part")
+part.Size = Vector3.new(4, 3, 0.1)
+part.Position = Vector3.new(10, 10, 10) -- Adjust position as needed
+part.Anchored = true
+part.Transparency = 1
+part.Parent = game.Workspace
+
+local screenGui = Instance.new("SurfaceGui")
+screenGui.CanvasSize = Vector2.new(500, 300) -- Adjust size as needed
+screenGui.Parent = part
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(1, 0, 1, 0)
+frame.BackgroundColor3 = Color3.new(0, 0, 0)
+frame.BackgroundTransparency = 0.5
+frame.Parent = screenGui
+
+local flyButton = Instance.new("TextButton")
+local unflyButton = Instance.new("TextButton")
+local switchButton = Instance.new("TextButton")
+local backButton = Instance.new("TextButton")
+local textBox = Instance.new("TextBox")
+
+flyButton.Parent = frame
+unflyButton.Parent = frame
+switchButton.Parent = frame
+backButton.Parent = frame
+textBox.Parent = frame
+
+local function showError(message)
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "Error",
+        Text = message,
+        Duration = 3
+    })
+end
+
+local function enableFly()
+    if flyEnabled then
+        return
+    else
+        player.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Flying, true)
+        flyEnabled = true
+    end
+end
+
+local function disableFly()
+    if not flyEnabled then
+        showError("You have not activated 'Fly'.")
+    else
+        player.Character:FindFirstChildOfClass("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Flying, false)
+        flyEnabled = false
+    end
+end
+
+local function switchToOtherPlayer()
+    local playerName = textBox.Text
+    
+    if playerName == "" then
+        showError("The textbox is empty.")
+        return
+    end
+    
+    otherPlayer = game.Players:FindFirstChild(playerName)
+    
+    if otherPlayer then
+        game.Workspace.CurrentCamera.CameraSubject = otherPlayer.Character.Humanoid
+    else
+        showError("Player not found.")
+    end
+end
+
+local function switchToOwnScreen()
+    if not otherPlayer then
+        showError("You are in your screen.")
+        return
+    end
+    
+    game.Workspace.CurrentCamera.CameraSubject = player.Character.Humanoid
+    otherPlayer = nil
+end
+
+flyButton.MouseButton1Click:Connect(enableFly)
+unflyButton.MouseButton1Click:Connect(disableFly)
+switchButton.MouseButton1Click:Connect(switchToOtherPlayer)
+backButton.MouseButton1Click:Connect(switchToOwnScreen)
