@@ -1,72 +1,52 @@
--- Creating the GUI elements
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local flying = false
+local speed = 100
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0.2, 0, 0.4, 0)
-Frame.Position = UDim2.new(0.8, 0, 0.2, 0)
-Frame.BackgroundColor3 = Color3.new(0, 0, 0)
-Frame.BorderSizePixel = 5
-Frame.Parent = ScreenGui
-
-local function createButton(name, text, func)
-    local button = Instance.new("TextButton")
-    button.Name = name
-    button.Size = UDim2.new(0.8, 0, 0.1, 0)
-    button.Position = UDim2.new(0.1, 0, 0.1 * #Frame:GetChildren(), 0)
-    button.BackgroundColor3 = Color3.new(0.5, 0.5, 0.5)
-    button.Text = text
-    button.Parent = Frame
-    button.MouseButton1Click:Connect(func)
-end
-
-createButton("FlyButton", "Fly", function()
-    if not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        return  -- Player is dead or not spawned
-    end
-    game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    game.Players.LocalPlayer.Character.Humanoid.PlatformStand = true -- Prevents the player from falling
-end)
-
-createButton("UnflyButton", "Unfly", function()
-    if not game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        return
-    end
-    game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false -- Allow the player to fall
-    game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-end)
-
-createButton("ChangeSpeedButton", "Change Speed", function()
-    local speedInput = tonumber(Frame:FindFirstChild("SpeedInput").Text)
-    if speedInput then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speedInput
+flyButton.MouseButton1Click:Connect(function()
+    flying = true
+    humanoid.PlatformStand = true
+    while flying do
+        wait()
+        humanoid.JumpPower = 50
+        humanoid.WalkSpeed = speed
     end
 end)
 
-createButton("SeePlayerButton", "See Player", function()
-    local playerName = Frame:FindFirstChild("PlayerNameInput").Text
-    local player = game.Players:FindFirstChild(playerName)
-    if player then
-        -- Display the player on the screen
-        print("Player found:", player.Name)
+unflyButton.MouseButton1Click:Connect(function()
+    flying = false
+    humanoid.PlatformStand = false
+    humanoid.JumpPower = 50
+    humanoid.WalkSpeed = 16
+end)
+
+changeSpeedButton.MouseButton1Click:Connect(function()
+    speed = speed + 10
+    if speed > 200 then
+        speed = 100
+    end
+    humanoid.WalkSpeed = speed
+end)
+
+seePlayerButton.MouseButton1Click:Connect(function()
+    local players = game.Players:GetPlayers()
+    for _, player in ipairs(players) do
+        if player ~= game.Players.LocalPlayer then
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+            local head = character:WaitForChild("Head")
+            local cam = workspace.CurrentCamera
+            cam.CameraSubject = humanoid
+            cam.CameraType = Enum.CameraType.Attach
+            cam.CFrame = CFrame.new(head.Position, head.Position + Vector3.new(0, 0, -10))
+            wait(5)
+            cam.CameraSubject = nil
+        end
     end
 end)
 
-createButton("BackToScreenButton", "Back to My Screen", function()
-    -- Code to return to the player's own screen
+backToScreenButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    screenGui.Parent = nil
 end)
-
--- Adding input fields for speed and player name
-local speedInput = Instance.new("TextBox")
-speedInput.Name = "SpeedInput"
-speedInput.PlaceholderText = "Enter speed..."
-speedInput.Size = UDim2.new(0.8, 0, 0.05, 0)
-speedInput.Position = UDim2.new(0.1, 0, 0.05 * #Frame:GetChildren(), 0)
-speedInput.Parent = Frame
-
-local playerNameInput = Instance.new("TextBox")
-playerNameInput.Name = "PlayerNameInput"
-playerNameInput.PlaceholderText = "Enter player name..."
-playerNameInput.Size = UDim2.new(0.8, 0, 0.05, 0)
-playerNameInput.Position = UDim2.new(0.1, 0, 0.05 * #Frame:GetChildren() + 0.1, 0) -- Pause by adding a bit of height
-playerNameInput.Parent = Frame
